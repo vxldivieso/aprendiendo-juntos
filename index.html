@@ -7,6 +7,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── BLOQUEO TOTAL DE SELECCIÓN ── */
+* {
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
 :root {
   --cream: #FDF8F0;
   --text-dark: #4A3728;
@@ -82,12 +91,21 @@ html, body {
 .home-title span { display: block; font-size: 0.43em; font-weight: 600; color: var(--text-mid); margin-top: 8px; }
 @keyframes fadeSlideUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
 
-.menu-grid { display: flex; flex-direction: column; gap: 13px; width: 100%; max-width: 380px; }
+.menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  width: 100%; max-width: 360px;
+}
+/* last button (5th) spans full width and centers */
+.menu-btn:last-child { grid-column: 1 / -1; width: calc(50% - 7px); justify-self: center; }
 .menu-btn {
-  display: flex; align-items: center; gap: 18px;
-  padding: 18px 24px; border: none; border-radius: 28px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px;
+  aspect-ratio: 1 / 1;
+  padding: 12px 8px; border: none; border-radius: 28px;
   cursor: pointer; font-family: 'Baloo 2', cursive;
-  font-size: clamp(1.25rem, 4.8vw, 1.65rem); font-weight: 800;
+  font-size: clamp(1rem, 4vw, 1.25rem); font-weight: 800;
   color: var(--text-dark); box-shadow: var(--shadow);
   transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
   animation: fadeSlideUp 0.7s ease both;
@@ -104,10 +122,19 @@ html, body {
 .menu-btn:nth-child(2) { animation-delay: 0.2s; }
 .menu-btn:nth-child(3) { animation-delay: 0.3s; }
 .menu-btn .icon { flex-shrink: 0; display: flex; align-items: center; transition: transform 0.3s; }
+.menu-btn .icon svg { width: 58px; height: 58px; }
 .menu-btn:hover .icon { transform: rotate(-8deg) scale(1.15); }
-.menu-btn.nums { background: #FDEBD0; }
-.menu-btn.vocs { background: #D5E8D4; }
-.menu-btn.cols { background: #DAE8FC; }
+.menu-btn.nums  { background: #FDEBD0; }
+.menu-btn.vocs  { background: #D5E8D4; }
+.menu-btn.cols  { background: #DAE8FC; }
+.menu-btn.anims { background: #FAE0F0; }
+.menu-btn.shps  { background: #E8E0FA; }
+.menu-btn:nth-child(4) { animation-delay: 0.4s; }
+.menu-btn:nth-child(5) { animation-delay: 0.5s; }
+
+/* ── GENERIC CARD for animals & shapes ── */
+.gen-illus { margin-top: 6px; animation: illusFloat 0.5s 0.15s cubic-bezier(.34,1.56,.64,1) both; }
+.shape-display { animation: illusFloat 0.5s cubic-bezier(.34,1.56,.64,1) both; }
 
 /* ═══════════════════════════════
    SECTION SCREENS
@@ -221,27 +248,36 @@ html, body {
 @keyframes idleWiggle { 0%,100%{transform:translateY(0) rotate(0);} 40%{transform:translateY(-6px) rotate(3deg);} 70%{transform:translateY(-3px) rotate(-2deg);} }
 
 /* ═══════════════════════════════
-   NAV
+   NAV — dots only, swipe zones handle navigation
 ═══════════════════════════════ */
-.nav-row { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 14px 0 12px; flex-shrink: 0; }
-.nav-btn {
-  width: 64px; height: 64px; border-radius: 50%;
-  border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  background: white; box-shadow: var(--shadow);
-  transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
-  color: var(--text-dark);
-}
-.nav-btn:not(:disabled):hover { transform: scale(1.14); box-shadow: var(--shadow-lg); }
-.nav-btn:active { transform: scale(0.9); }
-.nav-btn:disabled { opacity: 0.25; }
-.dots-row { display: flex; gap: 9px; align-items: center; }
+.nav-row { display: flex; align-items: center; justify-content: center; padding: 12px 0 10px; flex-shrink: 0; }
+.dots-row { display: flex; gap: 10px; align-items: center; }
 .dot {
   width: 10px; height: 10px; border-radius: 50%;
   background: rgba(74,55,40,0.16);
-  transition: background 0.35s, transform 0.35s cubic-bezier(.34,1.56,.64,1), width 0.35s;
+  transition: background 0.35s, transform 0.35s cubic-bezier(.34,1.56,.64,1);
 }
 .dot.active { background: var(--text-dark); transform: scale(1.4); }
+
+/* ── SWIPE ZONES (invisible tap areas on left/right) ── */
+.swipe-zone {
+  position: absolute; top: 0; bottom: 0; width: 28%;
+  z-index: 10; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.swipe-zone-left  { left: 0; }
+.swipe-zone-right { right: 0; }
+
+/* Arrow hint that fades in on hover / touch */
+.swipe-arrow {
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+}
+.swipe-zone:hover .swipe-arrow,
+.swipe-zone.pressing .swipe-arrow { opacity: 0.22; }
+.swipe-zone.disabled { pointer-events: none; }
+.swipe-zone.disabled .swipe-arrow { display: none; }
 
 /* ═══════════════════════════════
    COLORS SECTION
@@ -387,6 +423,44 @@ html, body {
       </span>
       Colores
     </button>
+
+    <button class="menu-btn anims" onclick="openSection('animals')">
+      <span class="icon">
+        <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
+          <!-- cabeza gato -->
+          <circle cx="23" cy="26" r="14" fill="#F0B8D0"/>
+          <!-- orejas -->
+          <polygon points="12,16 8,6 18,14" fill="#F0B8D0"/>
+          <polygon points="34,16 38,6 28,14" fill="#F0B8D0"/>
+          <polygon points="12,16 10,9 17,14" fill="#F8D8E8"/>
+          <polygon points="34,16 36,9 29,14" fill="#F8D8E8"/>
+          <!-- ojos -->
+          <ellipse cx="18" cy="24" rx="3" ry="3.5" fill="#4A3728"/>
+          <ellipse cx="28" cy="24" rx="3" ry="3.5" fill="#4A3728"/>
+          <circle cx="19" cy="22.5" r="1.2" fill="white"/>
+          <circle cx="29" cy="22.5" r="1.2" fill="white"/>
+          <!-- nariz -->
+          <ellipse cx="23" cy="29" rx="2" ry="1.5" fill="#E07090"/>
+          <!-- bigotes -->
+          <line x1="8" y1="28" x2="18" y2="30" stroke="#D090B0" stroke-width="1.2"/>
+          <line x1="8" y1="32" x2="18" y2="31" stroke="#D090B0" stroke-width="1.2"/>
+          <line x1="38" y1="28" x2="28" y2="30" stroke="#D090B0" stroke-width="1.2"/>
+          <line x1="38" y1="32" x2="28" y2="31" stroke="#D090B0" stroke-width="1.2"/>
+        </svg>
+      </span>
+      Animales
+    </button>
+
+    <button class="menu-btn shps" onclick="openSection('shapes')">
+      <span class="icon">
+        <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
+          <circle cx="12" cy="12" r="8" fill="#A080C8" opacity="0.7"/>
+          <rect x="26" y="4" width="16" height="16" rx="3" fill="#87AECE" opacity="0.7"/>
+          <polygon points="23,28 7,42 39,42" fill="#87CEAB" opacity="0.7"/>
+        </svg>
+      </span>
+      Formas
+    </button>
   </div>
 </div>
 
@@ -398,7 +472,14 @@ html, body {
     </button>
     <div class="section-title-bar">Números</div>
   </div>
-  <div class="card-area">
+  <div class="card-area" style="position:relative;">
+    <!-- swipe / tap zones -->
+    <div class="swipe-zone swipe-zone-left" id="num-zone-left" onclick="navItem('numbers',-1)">
+      <svg class="swipe-arrow" width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M15 19l-7-7 7-7" stroke="#4A3728" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="swipe-zone swipe-zone-right" id="num-zone-right" onclick="navItem('numbers',1)">
+      <svg class="swipe-arrow" width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="#4A3728" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
     <div class="big-card" id="num-card" onclick="onCardTap('numbers',event)">
       <div class="main-display" id="num-display">1</div>
       <div class="main-label"  id="num-label">UNO</div>
@@ -410,9 +491,7 @@ html, body {
     </div>
   </div>
   <div class="nav-row">
-    <button class="nav-btn" id="num-prev" onclick="navItem('numbers',-1)" aria-label="Anterior"><svg width="24" height="24"><use href="#ico-left"/></svg></button>
     <div class="dots-row" id="num-dots-row"></div>
-    <button class="nav-btn" id="num-next" onclick="navItem('numbers',1)"  aria-label="Siguiente"><svg width="24" height="24"><use href="#ico-right"/></svg></button>
   </div>
 </div>
 
@@ -424,7 +503,13 @@ html, body {
     </button>
     <div class="section-title-bar">Vocales</div>
   </div>
-  <div class="card-area">
+  <div class="card-area" style="position:relative;">
+    <div class="swipe-zone swipe-zone-left" id="vow-zone-left" onclick="navItem('vowels',-1)">
+      <svg class="swipe-arrow" width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M15 19l-7-7 7-7" stroke="#4A3728" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="swipe-zone swipe-zone-right" id="vow-zone-right" onclick="navItem('vowels',1)">
+      <svg class="swipe-arrow" width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="#4A3728" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
     <div class="big-card" id="vow-card" onclick="onCardTap('vowels',event)">
       <div class="main-display" id="vow-display">A</div>
       <div class="main-label"  id="vow-label">a</div>
@@ -437,9 +522,7 @@ html, body {
     </div>
   </div>
   <div class="nav-row">
-    <button class="nav-btn" id="vow-prev" onclick="navItem('vowels',-1)" aria-label="Anterior"><svg width="24" height="24"><use href="#ico-left"/></svg></button>
     <div class="dots-row" id="vow-dots-row"></div>
-    <button class="nav-btn" id="vow-next" onclick="navItem('vowels',1)"  aria-label="Siguiente"><svg width="24" height="24"><use href="#ico-right"/></svg></button>
   </div>
 </div>
 
@@ -451,7 +534,13 @@ html, body {
     </button>
     <div class="section-title-bar">Colores</div>
   </div>
-  <div class="card-area">
+  <div class="card-area" style="position:relative;">
+    <div class="swipe-zone swipe-zone-left" id="col-zone-left" onclick="navItem('colors',-1)">
+      <svg class="swipe-arrow" width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M15 19l-7-7 7-7" stroke="#4A3728" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="swipe-zone swipe-zone-right" id="col-zone-right" onclick="navItem('colors',1)">
+      <svg class="swipe-arrow" width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="#4A3728" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
     <div class="big-card" id="col-card" onclick="onCardTap('colors',event)">
       <div class="color-bg-overlay" id="col-overlay"></div>
       <div class="color-circle"     id="col-circle"></div>
@@ -463,13 +552,70 @@ html, body {
     </div>
   </div>
   <div class="nav-row">
-    <button class="nav-btn" id="col-prev" onclick="navItem('colors',-1)" aria-label="Anterior"><svg width="24" height="24"><use href="#ico-left"/></svg></button>
     <div class="dots-row" id="col-dots-row"></div>
-    <button class="nav-btn" id="col-next" onclick="navItem('colors',1)"  aria-label="Siguiente"><svg width="24" height="24"><use href="#ico-right"/></svg></button>
   </div>
 </div>
 
+<!-- ═══════════════ ANIMALS ═══════════════ -->
+<div class="screen section-screen" id="screen-animals">
+  <div class="top-bar">
+    <button class="back-btn" onclick="goHome()" aria-label="Volver">
+      <svg width="22" height="22"><use href="#ico-back"/></svg>
+    </button>
+    <div class="section-title-bar">Animales</div>
+  </div>
+  <div class="card-area" style="position:relative;">
+    <div class="swipe-zone swipe-zone-left" id="ani-zone-left" onclick="navItem('animals',-1)">
+      <svg class="swipe-arrow" width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M15 19l-7-7 7-7" stroke="#4A3728" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="swipe-zone swipe-zone-right" id="ani-zone-right" onclick="navItem('animals',1)">
+      <svg class="swipe-arrow" width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="#4A3728" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="big-card" id="ani-card" onclick="onCardTap('animals',event)">
+      <div class="gen-illus" id="ani-illus"></div>
+      <div class="main-label" id="ani-label">GATO</div>
+    </div>
+    <div class="tap-hint">
+      <span class="hand"><svg width="20" height="24" viewBox="0 0 22 26" fill="none"><rect x="9" y="0" width="4" height="14" rx="2" fill="#D8BEB0"/><rect x="4" y="4" width="4" height="13" rx="2" fill="#D8BEB0"/><rect x="14" y="4" width="4" height="13" rx="2" fill="#D8BEB0"/><rect x="0" y="8" width="4" height="10" rx="2" fill="#D8BEB0"/><rect x="18" y="8" width="4" height="10" rx="2" fill="#D8BEB0"/><path d="M0 18 Q0 26 11 26 Q22 26 22 18 L18 18 L14 17 L9 17 L4 18 Z" fill="#E8CEC0"/></svg></span>
+      Toca para escuchar
+    </div>
+  </div>
+  <div class="nav-row"><div class="dots-row" id="ani-dots-row"></div></div>
+</div>
+
+<!-- ═══════════════ SHAPES ═══════════════ -->
+<div class="screen section-screen" id="screen-shapes">
+  <div class="top-bar">
+    <button class="back-btn" onclick="goHome()" aria-label="Volver">
+      <svg width="22" height="22"><use href="#ico-back"/></svg>
+    </button>
+    <div class="section-title-bar">Formas</div>
+  </div>
+  <div class="card-area" style="position:relative;">
+    <div class="swipe-zone swipe-zone-left" id="shp-zone-left" onclick="navItem('shapes',-1)">
+      <svg class="swipe-arrow" width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M15 19l-7-7 7-7" stroke="#4A3728" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="swipe-zone swipe-zone-right" id="shp-zone-right" onclick="navItem('shapes',1)">
+      <svg class="swipe-arrow" width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="#4A3728" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <div class="big-card" id="shp-card" onclick="onCardTap('shapes',event)">
+      <div class="shape-display" id="shp-illus"></div>
+      <div class="main-label" id="shp-label">CÍRCULO</div>
+    </div>
+    <div class="tap-hint">
+      <span class="hand"><svg width="20" height="24" viewBox="0 0 22 26" fill="none"><rect x="9" y="0" width="4" height="14" rx="2" fill="#D8BEB0"/><rect x="4" y="4" width="4" height="13" rx="2" fill="#D8BEB0"/><rect x="14" y="4" width="4" height="13" rx="2" fill="#D8BEB0"/><rect x="0" y="8" width="4" height="10" rx="2" fill="#D8BEB0"/><rect x="18" y="8" width="4" height="10" rx="2" fill="#D8BEB0"/><path d="M0 18 Q0 26 11 26 Q22 26 22 18 L18 18 L14 17 L9 17 L4 18 Z" fill="#E8CEC0"/></svg></span>
+      Toca para escuchar
+    </div>
+  </div>
+  <div class="nav-row"><div class="dots-row" id="shp-dots-row"></div></div>
+</div>
+
 <script>
+/* ── BLOQUEO DE SELECCIÓN EN JS ── */
+document.addEventListener('selectstart', e => e.preventDefault());
+document.addEventListener('dragstart',   e => e.preventDefault());
+document.addEventListener('contextmenu', e => e.preventDefault());
+
 /* ═══════════════════════════════════════════
    DATA
 ═══════════════════════════════════════════ */
@@ -499,6 +645,26 @@ const COLORS = [
   {name:'Negro',   speech:'negro',   hex:'#555555',bg:'#EBEBEB',text:'#222222'},
 ];
 
+const ANIMALS = [
+  {label:'GATO',   speech:'gato',    color:'#F0B8D0', svgId:'ani-cat'},
+  {label:'PERRO',  speech:'perro',   color:'#D4A870', svgId:'ani-dog'},
+  {label:'PATO',   speech:'pato',    color:'#F0D060', svgId:'ani-duck'},
+  {label:'CONEJO', speech:'conejo',  color:'#D8C0E8', svgId:'ani-rabbit'},
+  {label:'VACA',   speech:'vaca',    color:'#E8D8C0', svgId:'ani-cow'},
+  {label:'MARIPOSA',speech:'mariposa',color:'#A0D0C0',svgId:'ani-butterfly'},
+];
+
+const SHAPES = [
+  {label:'CÍRCULO',   speech:'círculo',   color:'#87AECE', svgId:'shp-circle'},
+  {label:'CUADRADO',  speech:'cuadrado',  color:'#F4A460', svgId:'shp-square'},
+  {label:'TRIÁNGULO', speech:'triángulo', color:'#87CEAB', svgId:'shp-triangle'},
+  {label:'ESTRELLA',  speech:'estrella',  color:'#F4C26A', svgId:'shp-star'},
+  {label:'CORAZÓN',   speech:'corazón',   color:'#F0A0B8', svgId:'shp-heart'},
+  {label:'RECTÁNGULO',speech:'rectángulo',color:'#C9A0DC', svgId:'shp-rect'},
+  {label:'DIAMANTE',  speech:'diamante',  color:'#70C0B0', svgId:'shp-diamond'},
+  {label:'ÓVALO',     speech:'óvalo',     color:'#F0B870', svgId:'shp-oval'},
+];
+
 /* ═══════════════════════════════════════════
    SVG OBJECT MAKERS (for numbers)
 ═══════════════════════════════════════════ */
@@ -521,10 +687,219 @@ const vowelSVGs = {
 };
 
 /* ═══════════════════════════════════════════
-   STATE
+   ANIMAL SVGs
 ═══════════════════════════════════════════ */
+const animalSVGs = {
+'ani-cat':`<svg width="160" height="150" viewBox="0 0 160 150" fill="none">
+  <!-- orejas -->
+  <polygon points="42,52 28,18 60,44" fill="#F0B8D0"/>
+  <polygon points="118,52 132,18 100,44" fill="#F0B8D0"/>
+  <polygon points="42,52 32,24 56,44" fill="#F8D8E8"/>
+  <polygon points="118,52 128,24 104,44" fill="#F8D8E8"/>
+  <!-- cabeza -->
+  <circle cx="80" cy="84" r="52" fill="#F0B8D0"/>
+  <!-- mejillas -->
+  <ellipse cx="52" cy="96" rx="16" ry="10" fill="#F8C8DC" opacity="0.6"/>
+  <ellipse cx="108" cy="96" rx="16" ry="10" fill="#F8C8DC" opacity="0.6"/>
+  <!-- ojos -->
+  <ellipse cx="62" cy="76" rx="11" ry="13" fill="#4A3728"/>
+  <ellipse cx="98" cy="76" rx="11" ry="13" fill="#4A3728"/>
+  <ellipse cx="62" cy="76" rx="5" ry="11" fill="#1A1010"/>
+  <ellipse cx="98" cy="76" rx="5" ry="11" fill="#1A1010"/>
+  <circle cx="66" cy="70" r="4" fill="white"/>
+  <circle cx="102" cy="70" r="4" fill="white"/>
+  <!-- nariz -->
+  <path d="M72 98 Q80 104 88 98 Q84 92 80 92 Q76 92 72 98Z" fill="#E07090"/>
+  <!-- boca -->
+  <path d="M80 104 Q70 114 62 110" stroke="#C05070" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M80 104 Q90 114 98 110" stroke="#C05070" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- bigotes -->
+  <line x1="20" y1="90" x2="64" y2="98" stroke="#D090B0" stroke-width="1.8"/>
+  <line x1="18" y1="102" x2="64" y2="102" stroke="#D090B0" stroke-width="1.8"/>
+  <line x1="20" y1="114" x2="64" y2="106" stroke="#D090B0" stroke-width="1.8"/>
+  <line x1="140" y1="90" x2="96" y2="98" stroke="#D090B0" stroke-width="1.8"/>
+  <line x1="142" y1="102" x2="96" y2="102" stroke="#D090B0" stroke-width="1.8"/>
+  <line x1="140" y1="114" x2="96" y2="106" stroke="#D090B0" stroke-width="1.8"/>
+</svg>`,
+
+'ani-dog':`<svg width="160" height="150" viewBox="0 0 160 150" fill="none">
+  <!-- orejas caídas -->
+  <ellipse cx="40" cy="72" rx="22" ry="34" fill="#C8986A" transform="rotate(-15 40 72)"/>
+  <ellipse cx="120" cy="72" rx="22" ry="34" fill="#C8986A" transform="rotate(15 120 72)"/>
+  <ellipse cx="40" cy="72" rx="14" ry="26" fill="#D8A880" opacity="0.5" transform="rotate(-15 40 72)"/>
+  <ellipse cx="120" cy="72" rx="14" ry="26" fill="#D8A880" opacity="0.5" transform="rotate(15 120 72)"/>
+  <!-- cabeza -->
+  <circle cx="80" cy="78" r="52" fill="#D4A870"/>
+  <!-- hocico -->
+  <ellipse cx="80" cy="102" rx="28" ry="20" fill="#E8C090"/>
+  <!-- ojos -->
+  <circle cx="60" cy="68" r="11" fill="#4A3728"/>
+  <circle cx="100" cy="68" r="11" fill="#4A3728"/>
+  <circle cx="64" cy="64" r="4" fill="white"/>
+  <circle cx="104" cy="64" r="4" fill="white"/>
+  <!-- nariz -->
+  <ellipse cx="80" cy="94" rx="10" ry="7" fill="#4A3728"/>
+  <ellipse cx="77" cy="92" rx="3" ry="2" fill="white" opacity="0.4"/>
+  <!-- boca -->
+  <path d="M80 100 Q68 112 58 108" stroke="#7A5838" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  <path d="M80 100 Q92 112 102 108" stroke="#7A5838" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  <!-- manchas -->
+  <ellipse cx="60" cy="56" rx="16" ry="12" fill="#C8906A" opacity="0.4"/>
+</svg>`,
+
+'ani-duck':`<svg width="160" height="150" viewBox="0 0 160 150" fill="none">
+  <!-- cuerpo -->
+  <ellipse cx="80" cy="112" rx="46" ry="32" fill="#F0D060"/>
+  <!-- cabeza -->
+  <circle cx="110" cy="70" r="30" fill="#F0D060"/>
+  <!-- pico -->
+  <path d="M136 68 L154 64 L152 74 L136 72 Z" fill="#F0A030"/>
+  <!-- ojo -->
+  <circle cx="118" cy="62" r="7" fill="#4A3728"/>
+  <circle cx="121" cy="59" r="2.5" fill="white"/>
+  <!-- ala -->
+  <ellipse cx="58" cy="106" rx="28" ry="16" fill="#E0C040" opacity="0.7"/>
+  <!-- patas -->
+  <path d="M62 140 L54 148 L68 148 L70 140Z" fill="#F0A030"/>
+  <path d="M84 140 L76 148 L90 148 L92 140Z" fill="#F0A030"/>
+  <!-- agua -->
+  <path d="M18 138 Q40 132 62 138 Q84 144 106 138 Q128 132 150 138" stroke="#87AECE" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <!-- plumón cabeza -->
+  <path d="M106 44 Q110 34 116 38" stroke="#E0C040" stroke-width="3" stroke-linecap="round" fill="none"/>
+</svg>`,
+
+'ani-rabbit':`<svg width="160" height="150" viewBox="0 0 160 150" fill="none">
+  <!-- orejas largas -->
+  <ellipse cx="58" cy="30" rx="14" ry="36" fill="#D8C0E8"/>
+  <ellipse cx="102" cy="30" rx="14" ry="36" fill="#D8C0E8"/>
+  <ellipse cx="58" cy="30" rx="8" ry="28" fill="#F0C0D8" opacity="0.6"/>
+  <ellipse cx="102" cy="30" rx="8" ry="28" fill="#F0C0D8" opacity="0.6"/>
+  <!-- cabeza -->
+  <circle cx="80" cy="90" r="48" fill="#E8D8F4"/>
+  <!-- mejillas -->
+  <ellipse cx="52" cy="102" rx="18" ry="12" fill="#F0C0D8" opacity="0.5"/>
+  <ellipse cx="108" cy="102" rx="18" ry="12" fill="#F0C0D8" opacity="0.5"/>
+  <!-- ojos -->
+  <circle cx="62" cy="82" r="10" fill="#C090C0"/>
+  <circle cx="98" cy="82" r="10" fill="#C090C0"/>
+  <circle cx="62" cy="82" r="5" fill="#4A2848"/>
+  <circle cx="98" cy="82" r="5" fill="#4A2848"/>
+  <circle cx="65" cy="79" r="3" fill="white"/>
+  <circle cx="101" cy="79" r="3" fill="white"/>
+  <!-- nariz -->
+  <ellipse cx="80" cy="100" rx="6" ry="4" fill="#E070A0"/>
+  <!-- boca -->
+  <path d="M80 104 Q72 112 64 108" stroke="#C06090" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M80 104 Q88 112 96 108" stroke="#C06090" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <!-- bigotes -->
+  <line x1="28" y1="98" x2="72" y2="102" stroke="#C0A0D0" stroke-width="1.5"/>
+  <line x1="28" y1="108" x2="72" y2="106" stroke="#C0A0D0" stroke-width="1.5"/>
+  <line x1="132" y1="98" x2="88" y2="102" stroke="#C0A0D0" stroke-width="1.5"/>
+  <line x1="132" y1="108" x2="88" y2="106" stroke="#C0A0D0" stroke-width="1.5"/>
+</svg>`,
+
+'ani-cow':`<svg width="160" height="150" viewBox="0 0 160 150" fill="none">
+  <!-- manchas -->
+  <ellipse cx="80" cy="84" rx="52" ry="48" fill="#F5F0E8"/>
+  <ellipse cx="56" cy="72" rx="22" ry="18" fill="#8A7060" opacity="0.25"/>
+  <ellipse cx="100" cy="96" rx="18" ry="14" fill="#8A7060" opacity="0.2"/>
+  <!-- orejas -->
+  <ellipse cx="32" cy="68" rx="16" ry="10" fill="#E8D8C0" transform="rotate(-20 32 68)"/>
+  <ellipse cx="128" cy="68" rx="16" ry="10" fill="#E8D8C0" transform="rotate(20 128 68)"/>
+  <ellipse cx="32" cy="68" rx="9" ry="6" fill="#F0C0B0" opacity="0.6" transform="rotate(-20 32 68)"/>
+  <ellipse cx="128" cy="68" rx="9" ry="6" fill="#F0C0B0" opacity="0.6" transform="rotate(20 128 68)"/>
+  <!-- cuernos -->
+  <path d="M50 48 Q40 28 30 32" stroke="#D4B870" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <path d="M110 48 Q120 28 130 32" stroke="#D4B870" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <!-- hocico grande -->
+  <ellipse cx="80" cy="108" rx="30" ry="22" fill="#F0C0A8"/>
+  <!-- fosas nasales -->
+  <ellipse cx="70" cy="106" rx="5" ry="4" fill="#D09080"/>
+  <ellipse cx="90" cy="106" rx="5" ry="4" fill="#D09080"/>
+  <!-- ojos -->
+  <circle cx="58" cy="74" r="12" fill="#4A3728"/>
+  <circle cx="102" cy="74" r="12" fill="#4A3728"/>
+  <circle cx="63" cy="69" r="4.5" fill="white"/>
+  <circle cx="107" cy="69" r="4.5" fill="white"/>
+  <!-- boca -->
+  <path d="M66 118 Q80 126 94 118" stroke="#B08070" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+</svg>`,
+
+'ani-butterfly':`<svg width="160" height="150" viewBox="0 0 160 150" fill="none">
+  <!-- alas superiores -->
+  <ellipse cx="46" cy="56" rx="40" ry="30" fill="#A0D0C0" opacity="0.85" transform="rotate(-20 46 56)"/>
+  <ellipse cx="114" cy="56" rx="40" ry="30" fill="#C9A0DC" opacity="0.85" transform="rotate(20 114 56)"/>
+  <!-- alas inferiores -->
+  <ellipse cx="50" cy="96" rx="28" ry="22" fill="#F0D060" opacity="0.8" transform="rotate(15 50 96)"/>
+  <ellipse cx="110" cy="96" rx="28" ry="22" fill="#F0A0B8" opacity="0.8" transform="rotate(-15 110 96)"/>
+  <!-- detalles alas -->
+  <circle cx="46" cy="52" r="8" fill="white" opacity="0.3"/>
+  <circle cx="114" cy="52" r="8" fill="white" opacity="0.3"/>
+  <circle cx="52" cy="94" r="6" fill="white" opacity="0.3"/>
+  <circle cx="108" cy="94" r="6" fill="white" opacity="0.3"/>
+  <!-- cuerpo -->
+  <ellipse cx="80" cy="76" rx="8" ry="32" fill="#4A3728"/>
+  <ellipse cx="80" cy="76" rx="5" ry="28" fill="#6A5748"/>
+  <!-- cabeza -->
+  <circle cx="80" cy="44" r="10" fill="#4A3728"/>
+  <circle cx="77" cy="41" r="3" fill="white" opacity="0.4"/>
+  <!-- antenas -->
+  <path d="M76 36 Q68 20 62 14" stroke="#4A3728" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <path d="M84 36 Q92 20 98 14" stroke="#4A3728" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <circle cx="62" cy="13" r="4" fill="#F0A0B8"/>
+  <circle cx="98" cy="13" r="4" fill="#A0D0C0"/>
+</svg>`,
+};
+
+/* ═══════════════════════════════════════════
+   SHAPE SVGs
+═══════════════════════════════════════════ */
+const shapeSVGs = {
+'shp-circle':`<svg width="160" height="160" viewBox="0 0 160 160" fill="none">
+  <circle cx="80" cy="80" r="64" fill="#87AECE" opacity="0.85"/>
+  <circle cx="80" cy="80" r="64" stroke="#5A8AB0" stroke-width="3" fill="none"/>
+  <circle cx="54" cy="52" r="14" fill="white" opacity="0.25"/>
+  <circle cx="44" cy="42" r="6" fill="white" opacity="0.2"/>
+</svg>`,
+'shp-square':`<svg width="160" height="160" viewBox="0 0 160 160" fill="none">
+  <rect x="16" y="16" width="128" height="128" rx="12" fill="#F4A460" opacity="0.85"/>
+  <rect x="16" y="16" width="128" height="128" rx="12" stroke="#C87840" stroke-width="3" fill="none"/>
+  <rect x="32" y="32" width="36" height="28" rx="6" fill="white" opacity="0.2"/>
+</svg>`,
+'shp-triangle':`<svg width="160" height="150" viewBox="0 0 160 150" fill="none">
+  <polygon points="80,10 154,140 6,140" fill="#87CEAB" opacity="0.85"/>
+  <polygon points="80,10 154,140 6,140" stroke="#50A070" stroke-width="3" fill="none"/>
+  <ellipse cx="68" cy="62" rx="12" ry="9" fill="white" opacity="0.2" transform="rotate(-30 68 62)"/>
+</svg>`,
+'shp-star':`<svg width="160" height="160" viewBox="0 0 160 160" fill="none">
+  <polygon points="80,10 95,58 146,58 105,88 120,136 80,108 40,136 55,88 14,58 65,58" fill="#F4C26A" opacity="0.9"/>
+  <polygon points="80,10 95,58 146,58 105,88 120,136 80,108 40,136 55,88 14,58 65,58" stroke="#C89430" stroke-width="2.5" fill="none"/>
+  <ellipse cx="66" cy="48" rx="10" ry="7" fill="white" opacity="0.25" transform="rotate(-20 66 48)"/>
+</svg>`,
+'shp-heart':`<svg width="160" height="148" viewBox="0 0 160 148" fill="none">
+  <path d="M80 136 C80 136 10 90 10 46 C10 22 28 8 50 8 C63 8 74 14 80 24 C86 14 97 8 110 8 C132 8 150 22 150 46 C150 90 80 136 80 136Z" fill="#F0A0B8" opacity="0.88"/>
+  <path d="M80 136 C80 136 10 90 10 46 C10 22 28 8 50 8 C63 8 74 14 80 24 C86 14 97 8 110 8 C132 8 150 22 150 46 C150 90 80 136 80 136Z" stroke="#C07090" stroke-width="2.5" fill="none"/>
+  <ellipse cx="48" cy="38" rx="14" ry="10" fill="white" opacity="0.25" transform="rotate(-30 48 38)"/>
+</svg>`,
+'shp-rect':`<svg width="160" height="120" viewBox="0 0 160 120" fill="none">
+  <rect x="8" y="18" width="144" height="84" rx="14" fill="#C9A0DC" opacity="0.85"/>
+  <rect x="8" y="18" width="144" height="84" rx="14" stroke="#9060B0" stroke-width="3" fill="none"/>
+  <rect x="22" y="30" width="42" height="26" rx="7" fill="white" opacity="0.2"/>
+</svg>`,
+'shp-diamond':`<svg width="140" height="160" viewBox="0 0 140 160" fill="none">
+  <polygon points="70,6 134,72 70,154 6,72" fill="#70C0B0" opacity="0.85"/>
+  <polygon points="70,6 134,72 70,154 6,72" stroke="#409080" stroke-width="2.5" fill="none"/>
+  <polygon points="70,6 134,72 70,72" fill="white" opacity="0.12"/>
+  <ellipse cx="56" cy="44" rx="10" ry="7" fill="white" opacity="0.2" transform="rotate(-30 56 44)"/>
+</svg>`,
+'shp-oval':`<svg width="160" height="120" viewBox="0 0 160 120" fill="none">
+  <ellipse cx="80" cy="60" rx="70" ry="48" fill="#F0B870" opacity="0.85"/>
+  <ellipse cx="80" cy="60" rx="70" ry="48" stroke="#C08030" stroke-width="3" fill="none"/>
+  <ellipse cx="52" cy="36" rx="14" ry="9" fill="white" opacity="0.22" transform="rotate(-20 52 36)"/>
+</svg>`,
+};
 let currentSection = 'home';
-let indexes = {numbers:0, vowels:0, colors:0};
+let indexes = {numbers:0, vowels:0, colors:0, animals:0, shapes:0};
 let audioCtx = null;
 
 function getAudioCtx() {
@@ -592,15 +967,23 @@ function navItem(sec, dir) {
   setTimeout(() => speakCurrent(), 180);
 }
 
-function getDataFor(sec) { return sec==='numbers'?NUMBERS:sec==='vowels'?VOWELS:COLORS; }
+function getDataFor(sec) {
+  if (sec==='numbers') return NUMBERS;
+  if (sec==='vowels')  return VOWELS;
+  if (sec==='animals') return ANIMALS;
+  if (sec==='shapes')  return SHAPES;
+  return COLORS;
+}
 
 /* ═══════════════════════════════════════════
    RENDER
 ═══════════════════════════════════════════ */
 function renderSection(sec, dir) {
   if (sec==='numbers') renderNumbers(dir);
-  else if (sec==='vowels') renderVowels(dir);
-  else renderColors(dir);
+  else if (sec==='vowels')  renderVowels(dir);
+  else if (sec==='colors')  renderColors(dir);
+  else if (sec==='animals') renderAnimals(dir);
+  else if (sec==='shapes')  renderShapes(dir);
   updateDots(sec);
   updateNavBtns(sec);
 }
@@ -670,10 +1053,35 @@ function renderColors(dir='none') {
   triggerCardAnim('col-card', dir);
 }
 
+function renderAnimals(dir='none') {
+  const d = ANIMALS[indexes.animals];
+  const illus = document.getElementById('ani-illus');
+  const label = document.getElementById('ani-label');
+  illus.style.animation='none'; void illus.offsetWidth; illus.style.animation='';
+  label.style.animation='none'; void label.offsetWidth; label.style.animation='';
+  illus.innerHTML = animalSVGs[d.svgId] || '';
+  label.textContent = d.label;
+  label.style.color = d.color;
+  triggerCardAnim('ani-card', dir);
+}
+
+function renderShapes(dir='none') {
+  const d = SHAPES[indexes.shapes];
+  const illus = document.getElementById('shp-illus');
+  const label = document.getElementById('shp-label');
+  illus.style.animation='none'; void illus.offsetWidth; illus.style.animation='';
+  label.style.animation='none'; void label.offsetWidth; label.style.animation='';
+  illus.innerHTML = shapeSVGs[d.svgId] || '';
+  label.textContent = d.label;
+  label.style.color = d.color;
+  triggerCardAnim('shp-card', dir);
+}
+
 function updateDots(sec) {
   const data  = getDataFor(sec);
-  const rowId = sec==='numbers'?'num-dots-row':sec==='vowels'?'vow-dots-row':'col-dots-row';
-  const row   = document.getElementById(rowId);
+  const rowMap = {numbers:'num-dots-row',vowels:'vow-dots-row',colors:'col-dots-row',animals:'ani-dots-row',shapes:'shp-dots-row'};
+  const row = document.getElementById(rowMap[sec]);
+  if (!row) return;
   row.innerHTML='';
   data.forEach((_,i)=>{
     const dot=document.createElement('div');
@@ -682,27 +1090,44 @@ function updateDots(sec) {
   });
 }
 function updateNavBtns(sec) {
-  const data=getDataFor(sec); const idx=indexes[sec];
-  const p=sec==='numbers'?'num':sec==='vowels'?'vow':'col';
-  document.getElementById(p+'-prev').disabled = idx===0;
-  document.getElementById(p+'-next').disabled = idx===data.length-1;
+  const data = getDataFor(sec); const idx = indexes[sec];
+  const pMap = {numbers:'num',vowels:'vow',colors:'col',animals:'ani',shapes:'shp'};
+  const p = pMap[sec];
+  const zL = document.getElementById(p+'-zone-left');
+  const zR = document.getElementById(p+'-zone-right');
+  if (zL) zL.classList.toggle('disabled', idx===0);
+  if (zR) zR.classList.toggle('disabled', idx===data.length-1);
 }
+
+/* ── TOUCH SWIPE SUPPORT ── */
+(function() {
+  let startX = 0, startY = 0, startSec = null;
+  document.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    startSec = currentSection;
+  }, {passive:true});
+  document.addEventListener('touchend', e => {
+    if (!startSec || startSec === 'home') return;
+    const dx = e.changedTouches[0].clientX - startX;
+    const dy = e.changedTouches[0].clientY - startY;
+    // only horizontal swipes with enough distance and not mostly vertical
+    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      navItem(startSec, dx < 0 ? 1 : -1);
+    }
+  }, {passive:true});
+})();
 
 /* ═══════════════════════════════════════════
    CARD TAP — ripple + confetti + speak
 ═══════════════════════════════════════════ */
 function onCardTap(sec, event) {
-  const cardId = sec==='numbers'?'num-card':sec==='vowels'?'vow-card':'col-card';
-  const card   = document.getElementById(cardId);
-
-  // ripple
+  const cardMap = {numbers:'num-card',vowels:'vow-card',colors:'col-card',animals:'ani-card',shapes:'shp-card'};
+  const card = document.getElementById(cardMap[sec]);
   card.classList.remove('rippling');
   void card.offsetWidth;
   card.classList.add('rippling');
-
-  // confetti burst
   confettiBurst(event.clientX, event.clientY);
-
   speakCurrent();
 }
 
@@ -739,8 +1164,10 @@ function speakCurrent() {
   window.speechSynthesis.cancel();
   let text = '';
   if (currentSection==='numbers') text=NUMBERS[indexes.numbers].speech;
-  else if (currentSection==='vowels') text=VOWELS[indexes.vowels].speech;
-  else if (currentSection==='colors') text=COLORS[indexes.colors].speech;
+  else if (currentSection==='vowels')  text=VOWELS[indexes.vowels].speech;
+  else if (currentSection==='colors')  text=COLORS[indexes.colors].speech;
+  else if (currentSection==='animals') text=ANIMALS[indexes.animals].speech;
+  else if (currentSection==='shapes')  text=SHAPES[indexes.shapes].speech;
   if (!text) return;
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang='es-ES'; utter.rate=0.72; utter.pitch=1.15; utter.volume=1;
@@ -824,9 +1251,11 @@ function playCelebrate() {
 // Gentle lullaby chime on card tap
 function playTapChime(sec) {
   const scales = {
-    numbers: [523,659,784],   // C E G
-    vowels:  [587,740,880],   // D F# A
-    colors:  [622,784,932],   // Eb G Bb
+    numbers: [523,659,784],
+    vowels:  [587,740,880],
+    colors:  [622,784,932],
+    animals: [554,698,831],
+    shapes:  [494,622,740],
   };
   const notes = scales[sec] || scales.numbers;
   notes.forEach((f,i)=>playNote(f, i*0.08, 0.45, 0.13));
@@ -846,7 +1275,7 @@ window.openSection = function(sec) {
 };
 
 /* ─── Celebrate when reaching last item ─── */
-let lastIndexes = {numbers:-1, vowels:-1, colors:-1};
+let lastIndexes = {numbers:-1, vowels:-1, colors:-1, animals:-1, shapes:-1};
 const _navItem = navItem;
 window.navItem = function(sec, dir) {
   _navItem(sec, dir);
@@ -861,6 +1290,8 @@ window.navItem = function(sec, dir) {
 renderSection('numbers','none');
 renderSection('vowels','none');
 renderSection('colors','none');
+renderSection('animals','none');
+renderSection('shapes','none');
 </script>
 </body>
 </html>
